@@ -1,5 +1,23 @@
 <resources>
     <string name="app_name">Calculator</string>
-    <string name="result">%1$s %2$s</string>
-    <string name="result_label">Result</string>
+    <string name="result">= %1$s</string>
+    <string name="expression">Expression</string>
+    <string name="_1_btn">1</string>
+    <string name="_2_btn">2</string>
+    <string name="_3_btn">3</string>
+    <string name="_4_btn">4</string>
+    <string name="_5_btn">5</string>
+    <string name="_6_btn">6</string>
+    <string name="_7_btn">7</string>
+    <string name="_8_btn">8</string>
+    <string name="_9_btn">9</string>
+    <string name="_0_btn">0</string>
+    <string name="plus_btn">+</string>
+    <string name="minus_btn">-</string>
+    <string name="multiply_btn">×</string>
+    <string name="divide_btn">/</string>
+    <string name="equals_btn">=</string>
+    <string name="clear_btn">C</string>
+
+    <string name="calculator_desc">Calculator Keyboard</string>
 </resources>

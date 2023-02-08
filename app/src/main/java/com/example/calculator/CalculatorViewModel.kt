@@ -1,6 +1,5 @@
 package com.example.calculator
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,31 +11,74 @@ class CalculatorViewModel : ViewModel() {
         MutableStateFlow(CalculatorUiState())
     val uiState: StateFlow<CalculatorUiState> = _uiState.asStateFlow()
 
-    //Changes the result
-    fun compute(number: Int) {
-        Log.d("CalculatorViewModel", "compute()")
-        _uiState.update {
-            val oldResultNum = it.resultNum
-            it.copy(
-                resultNum = when (it.lastOperator) {
-                    '+' -> oldResultNum + number
-                    '-' -> oldResultNum - number
-                    '*' -> oldResultNum * number
-                    '/' -> oldResultNum / number
-                    else -> number
-                }
-            )
+    //Returns result, immutable
+    private fun computeToExpression(number: Int): Int {
+        return _uiState.value.run {
+            when (this.lastOperator) {
+                '+' -> this.resultNum + number
+                '-' -> this.resultNum - number
+                '×' -> this.resultNum * number
+                '/' -> this.resultNum / number
+                '=' -> this.resultNum
+                else -> throw IllegalArgumentException("Operator not found")
+            }
         }
     }
 
-    fun updateLastOperator(newOperator: Char) {
-        _uiState.update { it.copy(lastOperator = newOperator) }
+    fun onOperatorClicked(newOperator: Char) {
+        val isExprFocused = _uiState.value.viewFocused == FocusedView.EXPRESSION_VIEW
+        //If expression is printing, change the operator
+        if (isExprFocused) {
+            _uiState.update {
+                it.copy(
+                    expression = it.expression + newOperator,
+                    lastOperator = newOperator
+                )
+            }
+        }
+        //If result is done, change expression as result
+        else {
+            _uiState.update {
+                it.copy(
+                    //initial value of resultNum is 0
+                    expression = it.resultNum.toString() + newOperator,
+                    lastOperator = newOperator
+                )
+            }
+        }
+    }
+
+    fun onNumberClicked(newNumber: Int) {
+        val isExprFocused = _uiState.value.viewFocused == FocusedView.EXPRESSION_VIEW
+        if (isExprFocused) {
+            _uiState.update {
+                it.copy(
+                    expression = it.expression + newNumber,
+                    resultNum = computeToExpression(newNumber)
+                )
+            }
+        }
+        else {
+            _uiState.update {
+                it.copy(
+                    //initial value of resultNum is 0
+                    expression = newNumber.toString(),
+                    resultNum = newNumber
+                )
+            }
+        }
     }
 
     fun clear() {
         _uiState.update {
-            it.copy(resultNum = 0, lastOperator = '=')
+            CalculatorUiState()
         }
-        Log.d("CalculatorViewModel", "clear()")
     }
+
+    fun updateFocusView(view: FocusedView) {
+        _uiState.update {
+            it.copy(viewFocused = view)
+        }
+    }
+
 }

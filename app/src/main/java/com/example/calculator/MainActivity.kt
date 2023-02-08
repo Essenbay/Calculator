@@ -20,26 +20,36 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        @Suppress("UNCHECKED_CAST")
         val buttons: Sequence<Button> =
-            binding.keyboard?.children?.filter { it is Button } as Sequence<Button>
+            binding.keyboard.children.filter { it is Button } as Sequence<Button>
 
         for (button in buttons) {
             val buttonChar = button.text.toString().first()
 
+            //Set onClickListener to Calculator buttons
             when (button.tag) {
                 "number" -> {
                     button.setOnClickListener {
-                        calcViewModel.compute(buttonChar.digitToInt())
+                        calcViewModel.onNumberClicked(buttonChar.digitToInt())
+                        calcViewModel.updateFocusView(FocusedView.EXPRESSION_VIEW)
                     }
                 }
                 "operator" -> {
                     button.setOnClickListener {
-                        calcViewModel.updateLastOperator(buttonChar)
+                        calcViewModel.onOperatorClicked(buttonChar)
+                        calcViewModel.updateFocusView(FocusedView.EXPRESSION_VIEW)
                     }
                 }
                 "clear" -> {
                     button.setOnClickListener {
                         calcViewModel.clear()
+                        calcViewModel.updateFocusView(FocusedView.RESULT_VIEW)
+                    }
+                }
+                "equals" -> {
+                    button.setOnClickListener {
+                        calcViewModel.updateFocusView(FocusedView.RESULT_VIEW)
                     }
                 }
             }
@@ -49,7 +59,25 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 calcViewModel.uiState.collect {
-                    binding.result.text = "${it.lastOperator} ${it.resultNum}"
+                    val expressionStr = it.expression
+                    binding.expressionView.text = expressionStr
+                    binding.expressionView.contentDescription = expressionStr
+
+                    val resultStr = getString(R.string.result, it.resultNum.toString())
+                    binding.resultView.text = resultStr
+                    binding.resultView.contentDescription = resultStr
+
+
+                    when (it.viewFocused) {
+                        FocusedView.EXPRESSION_VIEW -> {
+                            binding.expressionView.setTextAppearance(R.style.heading_focused)
+                            binding.resultView.setTextAppearance(R.style.heading_unfocused)
+                        }
+                        FocusedView.RESULT_VIEW -> {
+                            binding.resultView.setTextAppearance(R.style.heading_focused)
+                            binding.expressionView.setTextAppearance(R.style.heading_unfocused)
+                        }
+                    }
                 }
             }
         }
