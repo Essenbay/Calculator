@@ -32,24 +32,21 @@ class MainActivity : AppCompatActivity() {
                 "number" -> {
                     button.setOnClickListener {
                         calcViewModel.onNumberClicked(buttonChar.digitToInt())
-                        calcViewModel.updateFocusView(FocusedView.EXPRESSION_VIEW)
                     }
                 }
                 "operator" -> {
                     button.setOnClickListener {
                         calcViewModel.onOperatorClicked(buttonChar)
-                        calcViewModel.updateFocusView(FocusedView.EXPRESSION_VIEW)
                     }
                 }
                 "clear" -> {
                     button.setOnClickListener {
                         calcViewModel.clear()
-                        calcViewModel.updateFocusView(FocusedView.RESULT_VIEW)
                     }
                 }
                 "equals" -> {
                     button.setOnClickListener {
-                        calcViewModel.updateFocusView(FocusedView.RESULT_VIEW)
+                        calcViewModel.equals()
                     }
                 }
             }
@@ -59,25 +56,14 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 calcViewModel.uiState.collect {
-                    val expressionStr = it.expression
-                    binding.expressionView.text = expressionStr
-                    binding.expressionView.contentDescription = expressionStr
-
-                    val resultStr = getString(R.string.result, it.resultNum.toString())
-                    binding.resultView.text = resultStr
-                    binding.resultView.contentDescription = resultStr
-
-
-                    when (it.viewFocused) {
-                        FocusedView.EXPRESSION_VIEW -> {
-                            binding.expressionView.setTextAppearance(R.style.heading_focused)
-                            binding.resultView.setTextAppearance(R.style.heading_unfocused)
-                        }
-                        FocusedView.RESULT_VIEW -> {
-                            binding.resultView.setTextAppearance(R.style.heading_focused)
-                            binding.expressionView.setTextAppearance(R.style.heading_unfocused)
-                        }
+                    //Check if result looses data while converting
+                    val expressionStr = if (it.showResult) {
+                        getString(R.string.result, formatResult(it.result))
+                    } else {
+                        getString(R.string.expression, it.firstNum, it.operator, it.secondNum)
                     }
+                    binding.resultView.text = expressionStr
+                    binding.resultView.contentDescription = expressionStr
                 }
             }
         }

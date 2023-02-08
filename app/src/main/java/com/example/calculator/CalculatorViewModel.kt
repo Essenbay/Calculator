@@ -12,60 +12,105 @@ class CalculatorViewModel : ViewModel() {
     val uiState: StateFlow<CalculatorUiState> = _uiState.asStateFlow()
 
     //Returns result, immutable
-    private fun computeToExpression(number: Int): Int {
+    private fun getCalculation(): Double {
         return _uiState.value.run {
-            when (this.lastOperator) {
-                '+' -> this.resultNum + number
-                '-' -> this.resultNum - number
-                '×' -> this.resultNum * number
-                '/' -> this.resultNum / number
-                '=' -> this.resultNum
+            val firstNum = this.firstNum.toDouble()
+            val secondNum = this.secondNum.toDouble()
+            when (this.operator) {
+                '+' -> firstNum.plus(secondNum)
+                '-' -> firstNum.minus(secondNum)
+                '×' -> firstNum.times(secondNum)
+                '/' -> firstNum.div(secondNum)
                 else -> throw IllegalArgumentException("Operator not found")
             }
         }
     }
 
-    fun onOperatorClicked(newOperator: Char) {
-        val isExprFocused = _uiState.value.viewFocused == FocusedView.EXPRESSION_VIEW
-        //If expression is printing, change the operator
-        if (isExprFocused) {
-            _uiState.update {
-                it.copy(
-                    expression = it.expression + newOperator,
-                    lastOperator = newOperator
+    fun equals() {
+        if (_uiState.value.operator != '=') {
+            _uiState.update { oldUi ->
+                oldUi.copy(
+                    firstNum = "",
+                    secondNum = "",
+                    result = getCalculation(),
+                    operator = ' ',
+                    showResult = true
                 )
             }
         }
-        //If result is done, change expression as result
-        else {
-            _uiState.update {
-                it.copy(
-                    //initial value of resultNum is 0
-                    expression = it.resultNum.toString() + newOperator,
-                    lastOperator = newOperator
+    }
+
+    fun showExpression() {
+        _uiState.update {
+            it.copy(
+                showResult = false
+            )
+        }
+    }
+
+    fun onOperatorClicked(newOperator: Char) {
+        _uiState.update { oldState ->
+            if (oldState.showResult) {
+                oldState.copy(
+                    firstNum = formatResult(oldState.result),
+                    operator = newOperator,
+                    showResult = false
+                )
+            } else {
+                oldState.copy(
+                    operator = newOperator,
                 )
             }
         }
     }
 
     fun onNumberClicked(newNumber: Int) {
-        val isExprFocused = _uiState.value.viewFocused == FocusedView.EXPRESSION_VIEW
-        if (isExprFocused) {
-            _uiState.update {
-                it.copy(
-                    expression = it.expression + newNumber,
-                    resultNum = computeToExpression(newNumber)
+        _uiState.update { oldState ->
+            if (oldState.showResult) {
+                oldState.copy(
+                    firstNum = newNumber.toString(),
+                    operator = ' ',
+                    showResult = false
                 )
             }
-        }
-        else {
-            _uiState.update {
-                it.copy(
-                    //initial value of resultNum is 0
-                    expression = newNumber.toString(),
-                    resultNum = newNumber
-                )
+            else if (newNumber == 0 && (oldState.firstNum.isEmpty() && oldState.secondNum.isEmpty())) {
+                oldState
             }
+            //Change first number
+            else if (oldState.operator == ' ') {
+                val firstNum = oldState.firstNum
+                //If empty or 0
+                if (firstNum.isEmpty() || firstNum == "0") {
+                    oldState.copy(
+                        firstNum = newNumber.toString(),
+                        operator = ' '
+                    )
+                }
+                //Else append new number
+                else {
+                    oldState.copy(
+                        firstNum = oldState.firstNum.plus(newNumber),
+                        operator = ' '
+                    )
+                }
+            }
+            //Change second number
+            else {
+                val secondNum = oldState.secondNum
+                //If empty or 0
+                if (secondNum.isEmpty() || secondNum == "0") {
+                    oldState.copy(
+                        secondNum = newNumber.toString(),
+                    )
+                }
+                //Else append new number
+                else {
+                    oldState.copy(
+                        secondNum = oldState.secondNum.plus(newNumber),
+                    )
+                }
+            }
+
         }
     }
 
@@ -74,11 +119,4 @@ class CalculatorViewModel : ViewModel() {
             CalculatorUiState()
         }
     }
-
-    fun updateFocusView(view: FocusedView) {
-        _uiState.update {
-            it.copy(viewFocused = view)
-        }
-    }
-
 }

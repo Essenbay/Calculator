@@ -15,24 +15,17 @@
         android:paddingHorizontal="25dp">
 
         <TextView
-            android:id="@+id/expression_view"
+            android:id="@+id/result_view"
+            style="@style/TextAppearance.MaterialComponents.Headline4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:contentDescription="@string/expression"
-            android:text="@string/expression" />
-
-        <TextView
-            android:id="@+id/result_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/expression_view"
             android:layout_alignParentEnd="true"
             android:contentDescription="@string/result"
             android:text="@string/result" />
 
     </RelativeLayout>
+
     <GridLayout
         android:id="@+id/keyboard"
         android:layout_width="match_parent"

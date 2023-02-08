@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Calculator</string>
     <string name="result">= %1$s</string>
-    <string name="expression">Expression</string>
+    <string name="expression">%1$s %2$s %3$s</string>
     <string name="_1_btn">1</string>
     <string name="_2_btn">2</string>
     <string name="_3_btn">3</string>
